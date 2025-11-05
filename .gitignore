@@ -1,0 +1,10 @@
+# .gitignore
+.venv/
+__pycache__/
+*.pyc
+*.log
+data/*.zip
+datasets/
+runs/*  # Ignore all runs except model (add best.pt manually)
+*.cache
+*.pt  # Ignore .pt except best.pt
