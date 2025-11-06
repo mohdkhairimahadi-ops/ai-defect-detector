@@ -89,12 +89,12 @@ for typ in ['Train', 'Test']:
     for img_path in img_paths:
         base_name = Path(img_path).stem  # e.g., "0001"
         ext = Path(img_path).suffix.lower()  # ".png"
-        lbl_name = f"{base_name}_labels{ext}"  # ← "_labels.PNG"
+        lbl_name = f"{base_name}_label{ext}"  # ← "_labels.PNG"
         lbl_path = os.path.join(lbl_dir, lbl_name)
 
         if not os.path.exists(lbl_path):
             # Try lowercase
-            alt_name = f"{base_name}_labels.png"
+            alt_name = f"{base_name}_label.png"
             alt_path = os.path.join(lbl_dir, alt_name)
             if os.path.exists(alt_path):
                 lbl_path = alt_path
