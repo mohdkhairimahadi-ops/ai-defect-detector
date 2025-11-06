@@ -19,8 +19,9 @@ YOLOv8n app for detecting scratches/dents on metal/plastic parts.
 ## Setup
 1. `pip install -r requirements.txt`
 2. `python prepare.py` (dataset)
-3. `python -m ultralytics detect train data=data.yaml model=yolov8s.pt epochs=100`
-4. `streamlit run app.py`
+3. `python prepare2.py (dataset - please add Class2 until Class 10 into data/CompetitionData/  --> No RESULT YET for prepare2.py 
+4. `python -m ultralytics detect train data=data.yaml model=yolov8s.pt epochs=100`
+5. `streamlit run app.py`
 
 ## Files
 - `best.pt`: Trained model
