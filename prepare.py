@@ -69,12 +69,12 @@ for split in ['train', 'validation']:
 
 print(f"NEU: {neu_converted} images converted")
 
-# === 2. DAGM: Use 'labels/' folder + '_labels.PNG' suffix ===
+# === 2. DAGM: Handle 0001.PNG → 0001_label.PNG (zero-padded) ===
 dagm_converted = 0
 for typ in ['Train', 'Test']:
     split = 'train' if typ == 'Train' else 'val'
     img_dir = f'data/CompetitionData/Class1/{typ}/Good'
-    lbl_dir = f'data/CompetitionData/Class1/{typ}/labels'  # ← 'labels/', not 'Label'
+    lbl_dir = f'data/CompetitionData/Class1/{typ}/labels'
 
     if not os.path.exists(img_dir):
         print(f"Warning: {img_dir} not found")
@@ -83,18 +83,18 @@ for typ in ['Train', 'Test']:
         print(f"Warning: {lbl_dir} not found")
         continue
 
-    img_paths = glob.glob(f'{img_dir}/*.PNG')  # Case-insensitive
+    img_paths = glob.glob(f'{img_dir}/*.PNG') + glob.glob(f'{img_dir}/*.png')
     print(f"Found {len(img_paths)} DAGM images in {typ}/Good")
 
     for img_path in img_paths:
-        base_name = Path(img_path).stem  # e.g., "0001"
+        base_name = Path(img_path).stem  # "0001"
         ext = Path(img_path).suffix.lower()  # ".png"
-        lbl_name = f"{base_name}_label{ext}"  # ← "_labels.PNG"
+        lbl_name = f"{base_name}_label{ext}"  # "0001_label.PNG"
         lbl_path = os.path.join(lbl_dir, lbl_name)
 
         if not os.path.exists(lbl_path):
-            # Try lowercase
-            alt_name = f"{base_name}_label.png"
+            # Try uppercase .PNG
+            alt_name = f"{base_name}_label.PNG"
             alt_path = os.path.join(lbl_dir, alt_name)
             if os.path.exists(alt_path):
                 lbl_path = alt_path
@@ -126,4 +126,3 @@ for typ in ['Train', 'Test']:
             dagm_converted += 1
 
 print(f"DAGM: {dagm_converted} images converted")
-
