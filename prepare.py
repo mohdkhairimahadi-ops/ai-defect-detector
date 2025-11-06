@@ -69,12 +69,12 @@ for split in ['train', 'validation']:
 
 print(f"NEU: {neu_converted} images converted")
 
-# === 2. DAGM: Use 'labels/' folder (not 'Label/') ===
+# === 2. DAGM: Use 'labels/' folder + '_labels.PNG' suffix ===
 dagm_converted = 0
 for typ in ['Train', 'Test']:
     split = 'train' if typ == 'Train' else 'val'
     img_dir = f'data/CompetitionData/Class1/{typ}/Good'
-    lbl_dir = f'data/CompetitionData/Class1/{typ}/labels'  # ← FIXED: 'labels/', not 'Label/'
+    lbl_dir = f'data/CompetitionData/Class1/{typ}/labels'  # ← 'labels/', not 'Label'
 
     if not os.path.exists(img_dir):
         print(f"Warning: {img_dir} not found")
@@ -83,30 +83,28 @@ for typ in ['Train', 'Test']:
         print(f"Warning: {lbl_dir} not found")
         continue
 
-    img_paths = glob.glob(f'{img_dir}/*.[pP][nN][gG]')
+    img_paths = glob.glob(f'{img_dir}/*.PNG')  # Case-insensitive
     print(f"Found {len(img_paths)} DAGM images in {typ}/Good")
 
     for img_path in img_paths:
-        base_name = Path(img_path).stem  # e.g., "0576"
+        base_name = Path(img_path).stem  # e.g., "0001"
         ext = Path(img_path).suffix.lower()  # ".png"
-        lbl_name = f"{base_name}_labels{ext}"  # ← Fixed: "_labels" not "_label"
+        lbl_name = f"{base_name}_labels{ext}"  # ← "_labels.PNG"
         lbl_path = os.path.join(lbl_dir, lbl_name)
 
         if not os.path.exists(lbl_path):
-            # Try alternative case: 0576_label.png
-            alt_name = f"{base_name}_label.png"
+            # Try lowercase
+            alt_name = f"{base_name}_labels.png"
             alt_path = os.path.join(lbl_dir, alt_name)
             if os.path.exists(alt_path):
                 lbl_path = alt_path
             else:
-                continue  # No label → skip (good image)
+                continue  # No label → skip
 
         img = cv2.imread(img_path)
         mask = cv2.imread(lbl_path, 0)
-        if img is None or mask is None:
+        if img is None or mask is None or mask.max() == 0:
             continue
-        if mask.max() == 0:
-            continue  # Empty mask
 
         h, w = img.shape[:2]
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -126,7 +124,6 @@ for typ in ['Train', 'Test']:
             with open(new_lbl, 'w') as f:
                 f.write('\n'.join(boxes))
             dagm_converted += 1
-            print(f"Converted DAGM: {base_name}{ext}")
 
 print(f"DAGM: {dagm_converted} images converted")
 
