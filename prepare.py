@@ -69,32 +69,27 @@ for split in ['train', 'validation']:
 
 print(f"NEU: {neu_converted} images converted")
 
-# === 2. DAGM: Preserve .PNG case + debug print ===
+# === 2. DAGM: Zero-padded + case fix ===
 dagm_converted = 0
 for typ in ['Train', 'Test']:
     split = 'train' if typ == 'Train' else 'val'
     img_dir = f'data/CompetitionData/Class1/{typ}/Good'
     lbl_dir = f'data/CompetitionData/Class1/{typ}/labels'
 
-    if not os.path.exists(img_dir):
-        print(f"Warning: {img_dir} not found")
-        continue
-    if not os.path.exists(lbl_dir):
-        print(f"Warning: {lbl_dir} not found")
-        continue
+    if not os.path.exists(img_dir): continue
+    if not os.path.exists(lbl_dir): continue
 
     img_paths = glob.glob(f'{img_dir}/*.PNG') + glob.glob(f'{img_dir}/*.png')
     print(f"Found {len(img_paths)} DAGM images in {typ}/Good")
 
     for img_path in img_paths:
-        base_name = Path(img_path).stem  # "0595"
-        orig_ext = Path(img_path).suffix  # ".PNG" (preserves case)
+        base_name = Path(img_path).stem
+        orig_ext = Path(img_path).suffix  # ".PNG" or ".png"
         lbl_name = f"{base_name}_label{orig_ext}"
         lbl_path = os.path.join(lbl_dir, lbl_name)
 
         if not os.path.exists(lbl_path):
-            # Try .png fallback
-            alt_name = f"{base_name}_label.png"
+            alt_name = f"{base_name}_label.png" if orig_ext == '.PNG' else f"{base_name}_label.PNG"
             alt_path = os.path.join(lbl_dir, alt_name)
             if os.path.exists(alt_path):
                 lbl_path = alt_path
@@ -111,22 +106,27 @@ for typ in ['Train', 'Test']:
         boxes = []
         for cnt in contours:
             x, y, bw, bh = cv2.boundingRect(cnt)
-            if bw < 10 or bh < 10:
-                continue
+            if bw < 10 or bh < 10: continue
             cx = (x + bw/2) / w
             cy = (y + bh/2) / h
             boxes.append(f"0 {cx:.6f} {cy:.6f} {bw/w:.6f} {bh/h:.6f}")
 
         if boxes:
-            new_img = f'data/yolo/{split}/images/{base_name}{orig_ext}'  # ← .PNG preserved
+            new_img = f'data/yolo/{split}/images/{base_name}{orig_ext}'
             new_lbl = f'data/yolo/{split}/labels/{base_name}.txt'
-            try:
-                shutil.copy(img_path, new_img)
-                with open(new_lbl, 'w') as f:
-                    f.write('\n'.join(boxes))
-                dagm_converted += 1
-                print(f"Converted: {base_name}{orig_ext}")
-            except Exception as e:
-                print(f"Failed to copy {img_path}: {e}")
+
+            shutil.copy(img_path, new_img)
+
+            # === FORCE UPPERCASE .PNG ===
+            final_img_path = new_img.replace('.png', '.PNG')
+            if new_img != final_img_path:
+                os.rename(new_img, final_img_path)
+                new_img = final_img_path
+
+            with open(new_lbl, 'w') as f:
+                f.write('\n'.join(boxes))
+
+            dagm_converted += 1
+            print(f"Converted: {Path(final_img_path).name}")
 
 print(f"DAGM: {dagm_converted} images converted")
