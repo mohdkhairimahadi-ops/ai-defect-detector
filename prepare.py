@@ -69,7 +69,7 @@ for split in ['train', 'validation']:
 
 print(f"NEU: {neu_converted} images converted")
 
-# === 2. DAGM: Handle 0001.PNG → 0001_label.PNG (zero-padded) ===
+# === 2. DAGM: Preserve .PNG case + debug print ===
 dagm_converted = 0
 for typ in ['Train', 'Test']:
     split = 'train' if typ == 'Train' else 'val'
@@ -87,19 +87,19 @@ for typ in ['Train', 'Test']:
     print(f"Found {len(img_paths)} DAGM images in {typ}/Good")
 
     for img_path in img_paths:
-        base_name = Path(img_path).stem  # "0001"
-        ext = Path(img_path).suffix.lower()  # ".png"
-        lbl_name = f"{base_name}_label{ext}"  # "0001_label.PNG"
+        base_name = Path(img_path).stem  # "0595"
+        orig_ext = Path(img_path).suffix  # ".PNG" (preserves case)
+        lbl_name = f"{base_name}_label{orig_ext}"
         lbl_path = os.path.join(lbl_dir, lbl_name)
 
         if not os.path.exists(lbl_path):
-            # Try uppercase .PNG
-            alt_name = f"{base_name}_label.PNG"
+            # Try .png fallback
+            alt_name = f"{base_name}_label.png"
             alt_path = os.path.join(lbl_dir, alt_name)
             if os.path.exists(alt_path):
                 lbl_path = alt_path
             else:
-                continue  # No label → skip
+                continue
 
         img = cv2.imread(img_path)
         mask = cv2.imread(lbl_path, 0)
@@ -118,11 +118,15 @@ for typ in ['Train', 'Test']:
             boxes.append(f"0 {cx:.6f} {cy:.6f} {bw/w:.6f} {bh/h:.6f}")
 
         if boxes:
-            new_img = f'data/yolo/{split}/images/{base_name}{ext}'
+            new_img = f'data/yolo/{split}/images/{base_name}{orig_ext}'  # ← .PNG preserved
             new_lbl = f'data/yolo/{split}/labels/{base_name}.txt'
-            shutil.copy(img_path, new_img)
-            with open(new_lbl, 'w') as f:
-                f.write('\n'.join(boxes))
-            dagm_converted += 1
+            try:
+                shutil.copy(img_path, new_img)
+                with open(new_lbl, 'w') as f:
+                    f.write('\n'.join(boxes))
+                dagm_converted += 1
+                print(f"Converted: {base_name}{orig_ext}")
+            except Exception as e:
+                print(f"Failed to copy {img_path}: {e}")
 
 print(f"DAGM: {dagm_converted} images converted")
