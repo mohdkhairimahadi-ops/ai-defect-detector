@@ -89,7 +89,7 @@ for typ in ['Train', 'Test']:
     for img_path in img_paths:
         base_name = Path(img_path).stem  # e.g., "0576"
         ext = Path(img_path).suffix.lower()  # ".png"
-        lbl_name = f"{base_name}_label{ext}"  # "0576_label.PNG"
+        lbl_name = f"{base_name}_labels{ext}"  # ← Fixed: "_labels" not "_label"
         lbl_path = os.path.join(lbl_dir, lbl_name)
 
         if not os.path.exists(lbl_path):
@@ -129,3 +129,4 @@ for typ in ['Train', 'Test']:
             print(f"Converted DAGM: {base_name}{ext}")
 
 print(f"DAGM: {dagm_converted} images converted")
+
