@@ -3,15 +3,15 @@
 YOLOv8n app for detecting scratches/dents on metal/plastic parts.
 
 ## Results
-- **Accuracy**: 96.2% mAP@0.5 (target ≥95%)
+- **Accuracy**: 79.8% mAP@0.5 (target ≥95%)
 - **Dataset**: NEU (1800 imgs) + DAGM Class 1 (1150 imgs)
-- **Training**: 50 epochs, batch=16, lr=0.001
+- **Training**: 100 epochs, batch=32, lr=0.001
 
 | Metric | Value |
 |--------|-------|
-| mAP@0.5 | 96.2% |
-| Precision | 95.1% |
-| Recall | 92.3% |
+| mAP@0.5 | 79.8% |
+| Precision | 77.2% |
+| Recall | 69.9% |
 
 ## Live Demo
 [Hugging Face Space](https://huggingface.co/spaces/mohdkhairimahadi-ops/surface-defect-detector-v1)
